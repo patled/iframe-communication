@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Channel messaging demo</title>
+  </head>
+  <body>
+    <h1>Channel messaging demo</h1>
+    <p class="output1">message1</p>
+    <p class="output2">message2</p>
+    <iframe id="page1-frame" src="page1.html" width="512" height="248"></iframe>
+    <iframe id="page2-frame" src="page2.html" width="512" height="248"></iframe>
+    <script>
+      const channel1 = new MessageChannel();
+      const output1 = document.querySelector(".output1");
+
+      const channel2 = new MessageChannel();
+      const output2 = document.querySelector(".output2");
+
+      const frame1 = document.getElementById("page1-frame");
+      const frame2 = document.getElementById("page2-frame");
+
+      // Wait for the iframe to load
+      frame1.addEventListener("load", onLoad1);
+      frame2.addEventListener("load", onLoad2);
+
+      function onLoad1() {
+        console.log("channel - load1:", channel1);
+
+        // Listen for messages on port1
+        channel1.port1.onmessage = onMessage1;
+
+        // Transfer port2 to the iframe
+        frame1.contentWindow.postMessage("Posted to frame 1!", "*", [
+          channel1.port2,
+        ]);
+      }
+
+      function onLoad2() {
+        console.log("channel - load2:", channel2);
+        // Listen for messages on port1
+        channel2.port1.onmessage = onMessage2;
+        // Transfer port2 to the iframe
+        frame2.contentWindow.postMessage("Posted to frame 2!", "*", [
+          channel2.port2,
+        ]);
+      }
+
+      // Handle messages received on port1
+      function onMessage1(e) {
+        output1.innerHTML = e.data;
+      }
+      function onMessage2(e) {
+        output2.innerHTML = e.data;
+      }
+    </script>
+  </body>
+</html>
